@@ -131,15 +131,34 @@
 
 // module.exports = { app, server, io };
 
-const express =require('express');
-const http=require('http');
-const {Server}=require('socket.io');
-const cors=require('cors');
-const {v4:uuidv4}=require('uuid');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import path from 'path';
+
+import connectDb from './config/db.js';
+import setupSocket from './socket.js';
+import messageRoute from './routes/messageRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+
+dotenv.config();
+connectDb();
 
 const app=express();
-
-app.use(cors());
+app.use(cors({origin:process.env.CLIENT_ORIGIN||'*'}));
 app.use(express.json());
+app.use('/upload',express.static(path.join(process.cwd(), process.env.UPLOAD_DIR|| 'uploads')));
 
+app.use('/api/message',messageRoute);
+app.use('/api/upload',uploadRoutes);
+const server=http.createServer(app);
+const io=new Server(server,{cors:{origin:process.env.CLIENT_ORIGIN||'*'}});
+setupSocket(io);
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 // Simple in-memory storage for users and messages
