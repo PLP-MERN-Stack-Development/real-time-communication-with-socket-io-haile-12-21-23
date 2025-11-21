@@ -147,7 +147,8 @@ dotenv.config();
 connectDb();
 
 const app=express();
-app.use(cors({origin:process.env.CLIENT_ORIGIN||'*'}));
+app.use(cors({origin: "http://localhost:5173",
+  credentials: true}));
 app.use(express.json());
 app.use('/upload',express.static(path.join(process.cwd(), process.env.UPLOAD_DIR|| 'uploads')));
 
